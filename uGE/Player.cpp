@@ -95,7 +95,7 @@ namespace uGE
 		}
 		if( _timeLeft <= 0.f ) { /* Do timey stuff */ }
 
-        if (health <= 0)
+        if (health <= 0){
             //Make sure that PlayerController's keyboard controls get disabled!!!
             playNow("DEATH");
         }

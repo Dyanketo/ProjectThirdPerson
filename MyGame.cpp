@@ -77,6 +77,7 @@ bool MyGame::load()
 
 	uGE::SceneManager::_hud = new uGE::Hud();
     uGE::SoundManager::init();
+    uGE::SoundManager::getBGM("Forest");
 
 	return true;
 }
