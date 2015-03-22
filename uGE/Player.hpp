@@ -27,6 +27,7 @@ namespace uGE{
             virtual ~Player();
             //add public stuff underneath
             int getHealth();
+            void setHealth(int value);
             void addScore( int value );
             int getScore();
             int getTimeLeft();
@@ -49,7 +50,7 @@ namespace uGE{
             Body * _body;
 
         private:
-            float time = 0.f;
+            float time;
             unsigned int frame = 0;
             std::string activeAction;
             Anim idle;

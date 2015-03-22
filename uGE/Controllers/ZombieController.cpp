@@ -16,7 +16,7 @@
 #include "Collider.hpp"
 #include "SphereCollider.hpp"
 #include "CollisionDetection.hpp"
-
+#include "Logger.h"
 
 #include "utils/glm.hpp"
 
@@ -46,14 +46,13 @@ namespace uGE{
         switch(_state)
         {
 			case IDLE:
-			    _zombieParent->playNow("IDLE");
+			    //_zombieParent->playNow("IDLE");
 				if(_idleTimer <= 0.f){
 				   _eightDir = rand() %8;//INITIALISE RANDOM DIRECTION between 7 and 0
 				   _idleTimer = 1.f; // how many seconds till next direction
 				}
 				move(_eightDir);
-
-				_zombieParent->playNow("WALK");
+				//_zombieParent->playNow("WALK");
 				checkPlayerRange();//it checks every second compared to the update of every 2 seconds in player;
 
 				_idleTimer -= Time::step();
@@ -61,16 +60,16 @@ namespace uGE{
 			case TRANSFORM:
 				if(_transformTimer <= 0.f){
 					//can use nice animation here
-					_zombieParent->getBody()->setTexture( AssetManager::loadTexture( "Assets/Textures/bricks.jpg" ) );
+					_zombieParent->getBody()->setTexture( AssetManager::loadTexture( "Assets/Textures/viking.png" ) );
 					_zombieParent->setViking(true);
 					_state = IDLE;
 				}
 				if(_transformIntervalTimer <= 0.f){
 					_eightDir = rand() %8;//INITIALISE RANDOM DIRECTION between 7 and 0
-					_transformIntervalTimer = 0.05f;
+					_transformIntervalTimer = 0.03f;
 				}
 				move(_eightDir);
-				_zombieParent->playNow("WALK");
+				//_zombieParent->playNow("WALK");
 
 				_transformTimer -= Time::step();
 				_transformIntervalTimer -= Time::step();
@@ -142,6 +141,10 @@ namespace uGE{
 
         if( glm::length(rotate) > 0 ) {
             rotate = glm::normalize(rotate);
+            _zombieParent->playNow("WALK");
+        }
+        else if(_state == State::IDLE) {
+            _zombieParent->playNow("IDLE");
         }
 
         if(rotate != glm::vec3(0,0,0)){ _parent->setDirection(glm::normalize(rotate));}
@@ -153,23 +156,34 @@ namespace uGE{
 
     void ZombieController::onCollision( CollisionResult* result)
     {
+        if( result->objectB == nullptr ) {
+            return;
+        }
+
+        if( result->colliderTypeB == Collider::BOX ) {
+            if( result->colliderA == "zombieHitbox" ) {
+                _parent->setPosition( _parent->getPosition() - result->overlap );
+            }
+        }
 
         if( result->colliderTypeB == Collider::SPHERE ) {
-
-
             if(result->colliderA == "zombieHitbox"){
                 if(result->objectB->getName() == "Bullet") {
                     if(_state != TRANSFORM && !_zombieParent->getViking()){   //ZOMBIE BEHAVIOUR:
                         _state = TRANSFORM;
                         SoundManager::playSFX( "ZombieDie" );
-
                         _transformTimer = 1.3f;
                     }
-					SceneManager::del( result->objectB );//->setPosition( _parent->getPosition() - result->overlap );
+                    SceneManager::del( result->objectB );//->setPosition( _parent->getPosition() - result->overlap );
+                    //delete result->objectB;
                 }
 
-                if( result->objectB->getName() == "Cone_tree" || result->objectB->getName() == "Tree_dead" ) {
+                else if( result->objectB->getName() == "Cone_tree" || result->objectB->getName() == "Tree_dead" ) {
                     _parent->setPosition( _parent->getPosition() - result->overlap );
+                }
+
+                else if( result->objectB->getName() == "Zombie" && result->colliderB == "zombieHitbox" ) {
+                    _parent->setPosition( _parent->getPosition() - ( 0.5f * result->overlap ) );
                 }
             }
 
